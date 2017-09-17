@@ -47,7 +47,7 @@ func WrapH(h http.Handler) HandlerFunc {
 
 type H map[string]interface{}
 
-// Allows type H to be used with xml.Marshal
+// MarshalXML allows type H to be used with xml.Marshal.
 func (h H) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	start.Name = xml.Name{
 		Space: "",
@@ -69,6 +69,12 @@ func (h H) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		return err
 	}
 	return nil
+}
+
+func assert1(guard bool, text string) {
+	if !guard {
+		panic(text)
+	}
 }
 
 func filterFlags(content string) string {
@@ -94,12 +100,10 @@ func parseAccept(acceptHeader string) []string {
 	parts := strings.Split(acceptHeader, ",")
 	out := make([]string, 0, len(parts))
 	for _, part := range parts {
-		index := strings.IndexByte(part, ';')
-		if index >= 0 {
+		if index := strings.IndexByte(part, ';'); index >= 0 {
 			part = part[0:index]
 		}
-		part = strings.TrimSpace(part)
-		if len(part) > 0 {
+		if part = strings.TrimSpace(part); len(part) > 0 {
 			out = append(out, part)
 		}
 	}
@@ -137,10 +141,9 @@ func resolveAddress(addr []string) string {
 		if port := os.Getenv("PORT"); len(port) > 0 {
 			debugPrint("Environment variable PORT=\"%s\"", port)
 			return ":" + port
-		} else {
-			debugPrint("Environment variable PORT is undefined. Using port :8080 by default")
-			return ":8080"
 		}
+		debugPrint("Environment variable PORT is undefined. Using port :8080 by default")
+		return ":8080"
 	case 1:
 		return addr[0]
 	default:
